@@ -1,0 +1,1 @@
+Bot pour commu nft qui fait le listing de tout les wallets donné par un user et en renvoie le benefice de la semaine/journée
