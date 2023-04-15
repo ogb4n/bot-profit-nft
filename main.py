@@ -1,9 +1,11 @@
 import discord, os, json, sqlite3, time
 from discord.ext.commands import MissingPermissions
-from discord.ext import commands
+from discord.ext import commands, tasks
+from discord import app_commands, ui
+from discord.utils import get
 from logger import *
 
-db = sqlite3.connect("db.sqlite")
+db = sqlite3.connect("avant-garde.sqlite")
 cur = db.cursor()
 
 def getArgs():
@@ -28,6 +30,24 @@ async def on_ready():
 
     await bot.change_presence(activity=discord.Streaming(name="Dhoney", url="https://twitch.tv/idhoney"))
 
+	
+@bot.command(aliases=['AddWallet', 'Addwallet', 'addWallet', 'Walletadd', 'walletadd', 'WalletAdd', 'walletAdd'])
+async def addwallet(ctx, wallet_id=None, wallet_address=None):
+    """Permet d'ajouter un wallet"""
+    try:
+        cur.execute(f"SELECT * FROM users WHERE discord_id = {ctx.author.id}")
+        result = cur.fetchone()
+        if not result:
+            await ctx.send(f"oui ça marche {ctx.author.name}, tu possèdes l'id {ctx.author.id}, tu essaies d'ajouter le wallet {wallet_address} a ton wallet n°{wallet_id}")
+            cur.execute(f"INSERT INTO users(discord_id, wallet_{wallet_id}) VALUES ({ctx.author.id}, '{wallet_address}');")
+            db.commit()
+        else:
+            cur.execute(f"UPDATE users SET wallet_{wallet_id} = '{wallet_address}' WHERE discord_id = {ctx.author.id}")
+            db.commit()
+            logger.addInfo(f"Le wallet a bien été ajouté a la liste de {ctx.author.name}")
+            await ctx.send(f"tu as bien ajouté le wallet a ta liste")
+    except Exception as e:
+        print(e)
 
 if __name__ == '__main__':
     args = getArgs()
